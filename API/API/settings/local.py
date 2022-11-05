@@ -13,9 +13,9 @@ ALLOWED_HOSTS = []
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'hachiaqu',
-        'USER': 'hachiaqu',
-        'PASSWORD': 'Q54Rf-1Z2A3u-YX_G42zUhsuStwXM2ei',
+        'NAME': 'lxmilijz',
+        'USER': 'lxmilijz',
+        'PASSWORD': '7f-OE51fD5wrzEqz4dYAFEbfQ2klvhQ8',
         'HOST': 'babar.db.elephantsql.com',
         'PORT': 5432,
     }

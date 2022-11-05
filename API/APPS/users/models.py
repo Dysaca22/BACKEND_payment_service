@@ -24,14 +24,15 @@ class UserManager(BaseUserManager):
     def create_superuser(self, username, email, name, last_name, password=None, **extra_fields):
         return self._create_user(username, email, name, last_name, password, True, True, **extra_fields)
 
+
 class User(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField('Username', max_length = 255, unique = True)
-    email = models.EmailField('Mail',max_length = 255, unique = True,)
-    name = models.CharField('Names', max_length = 255, blank = True, null = True)
-    last_name = models.CharField('Last names', max_length = 255, blank = True, null = True)
-    image = models.ImageField('Profile image', upload_to='profile/', max_length=255, null=True, blank = True)
-    is_active = models.BooleanField(default = True)
-    is_staff = models.BooleanField(default = False)
+    username = models.CharField('Username', max_length=255, unique=True)
+    email = models.EmailField('Email', max_length=255, unique=True)
+    name = models.CharField('Names', max_length=255, blank=True, null=True)
+    last_name = models.CharField('Last names', max_length=255, blank=True, null=True)
+    image = models.ImageField('Profile image', upload_to='profile/', max_length=255, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
     historical = HistoricalRecords()
     objects = UserManager()
 
@@ -40,7 +41,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = 'Users'
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email','name','last_name']
+    REQUIRED_FIELDS = ['email', 'name', 'last_name']
 
     def __str__(self):
         return f'{self.name} {self.last_name}'
