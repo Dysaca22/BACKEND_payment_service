@@ -1,14 +1,9 @@
 from django.urls import path
-from .api import institution_api_view, institution_detail_view
-from .api import student_api_view, student_detail_view
-from .api import student_service_api_view, student_service_detail_view
+from .api import general_info_institution, create_student, general_info_student
 
 
 urlpatterns = [
-    path('institution/', institution_api_view, name='institution_api'),
-    path('institution/<int:pk>', institution_detail_view, name='institution_detail_api'),
-    path('student/', student_api_view, name='student_api'),
-    path('student/<int:pk>', student_detail_view, name='student_detail_api'),
-    path('student/service/<int:pk_student>', student_service_api_view, name='student_service_api'),
-    path('student/service/<int:pk>', student_service_detail_view, name='student_service_detail_api'),
+    path('', general_info_institution, name='general_info_institution'),
+    path('create/', create_student, name='create_student'),
+    path('student/<int:pk>', general_info_student, name='general_info_student'),
 ]
