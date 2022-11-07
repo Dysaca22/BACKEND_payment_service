@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from APPS.institutions.models import Institution, Semester, Student, Bill
-from .serializers import InstitutionSerializer, CreationStudenUserSerializer, GeneralInformationSerializer
+from APPS.institutions.models import Institution, Service, Program, Semester, Student, Bill
+from .serializers import InstitutionSerializer, CreationStudenUserSerializer, ServiceSerializer, GeneralInformationSerializer
 
 
 @api_view(['GET',])
@@ -32,10 +32,9 @@ def general_info_student(request, pk):
 
     if student:
         if request.method == 'GET':
-            bill = Bill.objects.filter(student=student).first()
             data = {
                 'student': student,
-                #'service': bill.semester.program.service if bill else Semester.objects.none()
+                'bill': Bill.objects.filter(student=student),
             }
             user_serializer = GeneralInformationSerializer(data)
             return Response(user_serializer.data, status=status.HTTP_200_OK)

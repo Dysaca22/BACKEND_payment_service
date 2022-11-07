@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from APPS.institutions.models import Institution, Campus, Service, Student
+from APPS.institutions.models import Institution, Campus, Service, Program, Semester, Student, Bill
 from APPS.users.models import User
 
 
@@ -72,7 +72,21 @@ class CreationStudenUserSerializer(serializers.Serializer):
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = '__all__'
+        fields = ['name', 'type']
+
+    
+class ProgramSerializer(serializers.ModelSerializer):
+    service = ServiceSerializer()
+    class Meta:
+        model = Program
+        fields = ['name', 'service']
+
+
+class SemesterSerializer(serializers.ModelSerializer):
+    program = ProgramSerializer()
+    class Meta:
+        model = Semester
+        fields = ['year', 'period', 'value', 'program']
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -89,6 +103,13 @@ class StudentSerializer(serializers.ModelSerializer):
         }
 
 
+class BillSerializer(serializers.ModelSerializer):
+    semester = SemesterSerializer()
+    class Meta:
+        model = Bill
+        fields = ['_paid', 'semester', '_expiration', '_generatedDate']
+
+
 class GeneralInformationSerializer(serializers.Serializer):
     student = StudentSerializer()
-    #service = ServiceSerializer()
+    bill = BillSerializer(many=True)
