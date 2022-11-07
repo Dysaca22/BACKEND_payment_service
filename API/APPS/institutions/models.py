@@ -62,7 +62,7 @@ class Service(models.Model):
     REQUIRED_FIELDS = '__all__'
 
     def __str__(self):
-        return f'{self.name}'
+        return f'{self.name} - {self.campus}'
 
 
 class Program(models.Model):
@@ -105,11 +105,11 @@ class Semester(models.Model):
     REQUIRED_FIELDS = ['period', 'value', 'program']
 
     def __str__(self):
-        return f'{self.year}_{self.period}'
+        return f'{self.year}_{self.period} - {self.program}'
     
 
 class Student(models.Model):
-    code = models.CharField('Code', max_length=10, blank=True, editable=False)
+    code = models.CharField('Code', max_length=10, unique=True, blank=True, editable=False)
     name = models.CharField('Name', max_length=255)
     lastName = models.CharField('Last name', max_length=255)
     # Foreign keys
@@ -140,7 +140,7 @@ class Bill(models.Model):
         (False, 'Unpaid'),
     )
 
-    _expiration = models.DateTimeField('Expiration date', editable=False, auto_now=False, auto_now_add=False)
+    _expiration = models.DateTimeField('Expiration date', editable=False)
     _generatedDate = models.DateTimeField('Creation date', default=datetime.datetime.now(), editable=False)
     _paid = models.BooleanField('Status', choices=PAID_OPTION, default=False)
     # Foreign keys
@@ -157,15 +157,24 @@ class Bill(models.Model):
         return f'{self.id}'
 
     def save(self, *args, **kwargs):
-        self.expiration = self._generatedDate + relativedelta(months=+1)
+        self._expiration = self._generatedDate + relativedelta(months=+1)
         super(Bill, self).save(*args, **kwargs)    
 
 
 class Pay(models.Model):
+
+    STATUS_ENUM = (
+        ('S', 'Started'), 
+        ('F', 'Finished'),
+        ('P', 'In process'),
+        ('C', 'cancelled'),
+    )
+
     _date = models.DateTimeField('Creation date', default=datetime.datetime.now(), editable=False)
+    _status = models.CharField('Status', max_length = 1, choices=STATUS_ENUM, default='P')
     # Foreign keys
-    bill = models.ForeignKey(Bill, verbose_name='Bill', null=True, editable=False, on_delete=models.SET_NULL)
-    student = models.ForeignKey(Student, verbose_name='Student', null=True, editable=False, on_delete=models.SET_NULL)
+    bills = models.ManyToManyField(Bill, related_name="Pay")
+    student = models.ForeignKey(Student, verbose_name='Student', null=True, on_delete=models.SET_NULL)
 
     historical = HistoricalRecords()
 
@@ -179,8 +188,9 @@ class Pay(models.Model):
         return f'{self.id}'
 
     def save(self, *args, **kwargs):
-        self.bill._ispaid = True
-        self.bill.save()
+        if self._status == 'F':
+            self.bill._ispaid = True
+            self.bill.save()
         super(Pay, self).save(*args, **kwargs)
     
     @property
