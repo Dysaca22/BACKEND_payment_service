@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from APPS.institutions.models import Institution, Service, Program, Semester, Student, Bill
-from .serializers import InstitutionSerializer, CreationStudenUserSerializer, ServiceSerializer, GeneralInformationSerializer
+from APPS.institutions.models import Institution, Student, Bill
+from .serializers import InstitutionSerializer, CreationStudenUserSerializer, GeneralInformationSerializer
 
 
 @api_view(['GET',])
@@ -27,7 +27,6 @@ def create_student(request):
 
 @api_view(['GET',])
 def general_info_student(request, pk):
-
     student = Student.objects.filter(id=pk).first()
 
     if student:
