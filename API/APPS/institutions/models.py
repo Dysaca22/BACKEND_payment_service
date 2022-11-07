@@ -94,7 +94,7 @@ class Semester(models.Model):
 
     year = models.IntegerField('Year', choices=YEAR_ENUM, default=datetime.datetime.now().year)
     period = models.CharField('Period', max_length=2, choices=PERIOD_ENUM)
-    value = value = models.DecimalField('Value', max_digits=9, decimal_places=2)
+    value = models.DecimalField('Value', max_digits=9, decimal_places=2)
     # Foreign keys
     program = models.ForeignKey(Program, verbose_name='Program', on_delete=models.CASCADE)
 

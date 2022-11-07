@@ -30,7 +30,6 @@ BASE_APPS = [
 LOCAL_APPS = [
     'APPS.users',
     'APPS.institutions',
-    'APPS.banks',
     'APPS.services',
 ]
 
