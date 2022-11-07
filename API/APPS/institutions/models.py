@@ -1,5 +1,6 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
+from dateutil.relativedelta import relativedelta
 import datetime, random
 from APPS.users.models import User
 
@@ -71,7 +72,7 @@ class Program(models.Model):
 
     class Meta:
         verbose_name = 'Program'
-        verbose_name_plural = 'Program'
+        verbose_name_plural = 'Programs'
 
     REQUIRED_FIELDS = '__all__'
 
@@ -139,21 +140,25 @@ class Bill(models.Model):
         (False, 'Unpaid'),
     )
 
-    expiration = models.DateTimeField('Expiration date', editable=False, auto_now=False, auto_now_add=False)
+    _expiration = models.DateTimeField('Expiration date', editable=False, auto_now=False, auto_now_add=False)
     _generatedDate = models.DateTimeField('Creation date', default=datetime.datetime.now(), editable=False)
     _paid = models.BooleanField('Status', choices=PAID_OPTION, default=False)
     # Foreign keys
-    semester = models.ForeignKey(Semester, verbose_name='Semester', null=True, editable=False, on_delete=models.SET_NULL)
-    student = models.ForeignKey(Student, verbose_name='Student', null=True, editable=False, on_delete=models.SET_NULL)
+    semester = models.ForeignKey(Semester, verbose_name='Semester', null=True, on_delete=models.SET_NULL)
+    student = models.ForeignKey(Student, verbose_name='Student', null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = 'Bill'
         verbose_name_plural = 'Bills'
 
-    REQUIRED_FIELDS = ['expiration', 'semester', 'student']
+    REQUIRED_FIELDS = ['semester', 'student']
 
     def __str__(self):
         return f'{self.id}'
+
+    def save(self, *args, **kwargs):
+        self.expiration = self._generatedDate + relativedelta(months=+1)
+        super(Bill, self).save(*args, **kwargs)    
 
 
 class Pay(models.Model):
