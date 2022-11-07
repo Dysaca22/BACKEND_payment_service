@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from APPS.institutions.models import Institution, Student, Bill
-from .serializers import InstitutionSerializer, CreationStudenUserSerializer, GeneralInformationSerializer
+from .serializers import InstitutionSerializer, StudentSerializer, BillSerializer, GeneralInformationSerializer, PaySerializer
 
 
 @api_view(['GET',])
@@ -10,23 +10,25 @@ def general_info_institution(request):
 
     if request.method == 'GET':
         institution = Institution.objects.all()
-        general_serializer = InstitutionSerializer(institution, many=True)
-        return Response(general_serializer.data, status=status.HTTP_200_OK)
+        institution_serializer = InstitutionSerializer(institution, many=True)
+        return Response(institution_serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(['POST',])
-def create_student(request):
-    
-    if request.method == 'POST':
-        student_serializer = CreationStudenUserSerializer(data=request.data)
-        if student_serializer.is_valid():
-            student_serializer.save()
-            return Response(student_serializer.data, status=status.HTTP_201_CREATED)
-        return Response(student_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@api_view(['GET',])
+def user_student(request, pk_user):
+
+    student = Student.objects.filter(user__id=pk_user).first()
+
+    if student:
+        if request.method == 'GET':
+            student_serializer = StudentSerializer(student)
+            return Response(student_serializer.data, status=status.HTTP_200_OK)
+    return Response({ 'message': 'No se ha encontrado estudiante con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET',])
 def general_info_student(request, pk):
+
     student = Student.objects.filter(id=pk).first()
 
     if student:
@@ -35,5 +37,36 @@ def general_info_student(request, pk):
                 'student': student,
                 'bill': Bill.objects.filter(student=student),
             }
-            user_serializer = GeneralInformationSerializer(data)
-            return Response(user_serializer.data, status=status.HTTP_200_OK)
+            student_serializer = GeneralInformationSerializer(data)
+            return Response(student_serializer.data, status=status.HTTP_200_OK)
+    return Response({ 'message': 'No se ha encontrado estudiante con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET',])
+def student_by_code(request, code):
+    student = Student.objects.filter(code=code).first()
+
+    if student:
+        if request.method == 'GET':
+            student_serializer = StudentSerializer(student)
+            return Response(student_serializer.data, status=status.HTTP_200_OK)
+    return Response({ 'message': 'No se ha encontrado estudiante con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET',])
+def missing_bills(request, code):
+    bills = Bill.objects.filter(student__code=code, _paid=False)
+
+    if request.method == 'GET':
+        bills_serializer = BillSerializer(bills, many=True)
+        return Response(bills_serializer.data, status=status.HTTP_200_OK)
+    
+
+@api_view(['POST',])
+def generate_pay(request):
+    if request.method == 'POST':
+        pay_serializer = PaySerializer(data=request.data)
+        if pay_serializer.is_valid():
+            pay_serializer.save()
+            return Response(pay_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(pay_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
