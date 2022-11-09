@@ -1,5 +1,6 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
+from dateutil.relativedelta import relativedelta
 import datetime, random
 from APPS.users.models import User
 
@@ -61,7 +62,7 @@ class Service(models.Model):
     REQUIRED_FIELDS = '__all__'
 
     def __str__(self):
-        return f'{self.name}'
+        return f'{self.name} - {self.campus}'
 
 
 class Program(models.Model):
@@ -71,7 +72,7 @@ class Program(models.Model):
 
     class Meta:
         verbose_name = 'Program'
-        verbose_name_plural = 'Program'
+        verbose_name_plural = 'Programs'
 
     REQUIRED_FIELDS = '__all__'
 
@@ -93,7 +94,7 @@ class Semester(models.Model):
 
     year = models.IntegerField('Year', choices=YEAR_ENUM, default=datetime.datetime.now().year)
     period = models.CharField('Period', max_length=2, choices=PERIOD_ENUM)
-    value = value = models.DecimalField('Value', max_digits=9, decimal_places=2)
+    value = models.DecimalField('Value', max_digits=9, decimal_places=2)
     # Foreign keys
     program = models.ForeignKey(Program, verbose_name='Program', on_delete=models.CASCADE)
 
@@ -104,11 +105,11 @@ class Semester(models.Model):
     REQUIRED_FIELDS = ['period', 'value', 'program']
 
     def __str__(self):
-        return f'{self.year}_{self.period}'
+        return f'{self.year}_{self.period} - {self.program}'
     
 
 class Student(models.Model):
-    code = models.CharField('Code', max_length=10, blank=True, editable=False)
+    code = models.CharField('Code', max_length=10, unique=True, blank=True, editable=False)
     name = models.CharField('Name', max_length=255)
     lastName = models.CharField('Last name', max_length=255)
     # Foreign keys
@@ -139,28 +140,41 @@ class Bill(models.Model):
         (False, 'Unpaid'),
     )
 
-    expiration = models.DateTimeField('Expiration date', editable=False, auto_now=False, auto_now_add=False)
+    _expiration = models.DateTimeField('Expiration date', editable=False)
     _generatedDate = models.DateTimeField('Creation date', default=datetime.datetime.now(), editable=False)
     _paid = models.BooleanField('Status', choices=PAID_OPTION, default=False)
     # Foreign keys
-    semester = models.ForeignKey(Semester, verbose_name='Semester', null=True, editable=False, on_delete=models.SET_NULL)
-    student = models.ForeignKey(Student, verbose_name='Student', null=True, editable=False, on_delete=models.SET_NULL)
+    semester = models.ForeignKey(Semester, verbose_name='Semester', null=True, on_delete=models.SET_NULL)
+    student = models.ForeignKey(Student, verbose_name='Student', null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = 'Bill'
         verbose_name_plural = 'Bills'
 
-    REQUIRED_FIELDS = ['expiration', 'semester', 'student']
+    REQUIRED_FIELDS = ['semester', 'student']
 
     def __str__(self):
         return f'{self.id}'
 
+    def save(self, *args, **kwargs):
+        self._expiration = self._generatedDate + relativedelta(months=+1)
+        super(Bill, self).save(*args, **kwargs)    
+
 
 class Pay(models.Model):
+
+    STATUS_ENUM = (
+        ('S', 'Started'), 
+        ('F', 'Finished'),
+        ('P', 'In process'),
+        ('C', 'cancelled'),
+    )
+
     _date = models.DateTimeField('Creation date', default=datetime.datetime.now(), editable=False)
+    _status = models.CharField('Status', max_length = 1, choices=STATUS_ENUM, default='P')
     # Foreign keys
-    bill = models.ForeignKey(Bill, verbose_name='Bill', null=True, editable=False, on_delete=models.SET_NULL)
-    student = models.ForeignKey(Student, verbose_name='Student', null=True, editable=False, on_delete=models.SET_NULL)
+    bills = models.ManyToManyField(Bill, related_name="Pay")
+    student = models.ForeignKey(Student, verbose_name='Student', null=True, on_delete=models.SET_NULL)
 
     historical = HistoricalRecords()
 
@@ -174,8 +188,9 @@ class Pay(models.Model):
         return f'{self.id}'
 
     def save(self, *args, **kwargs):
-        self.bill._ispaid = True
-        self.bill.save()
+        if self._status == 'F':
+            self.bill._ispaid = True
+            self.bill.save()
         super(Pay, self).save(*args, **kwargs)
     
     @property
