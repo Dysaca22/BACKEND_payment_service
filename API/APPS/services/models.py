@@ -24,7 +24,7 @@ class Fase1(models.Model):
         return f'{self.id}'
 
 
-class Fase2PSE(models.Model):
+class Fase2(models.Model):
 
     BANK_ENUM = (
         ('EB', 'East Bank'),
