@@ -148,22 +148,6 @@ def student_bills_to_pay(request):
 
 
 """
-( Botón cancelar ) (7)
-### /institucion/estudiante/pagar
-	- Redirección a /institucion/estudiante/pagar
-	- Enviar al backend (DELETE /institution/student/bills_to_pay/<int:id_pago>)
-"""
-@api_view(['DELETE'])
-def delete_student_bills_to_pay(request, pk):
-    pay = Pay.objects.filter(pk=pk).first()
-    if request.method == 'DELETE':
-        if pay:
-            pay.delete()
-            return Response({ 'message': 'No se ha eliminado pago con éxito' }, status=status.HTTP_204_NO_CONTENT)
-        return Response({ 'message': 'No se ha encontrado pago con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
-
-
-"""
 - Datos que envía el backend (GET /institution/student/pay/<int:pk_pago>)
 		. Nombre institución
 		. Concepto de servicios a pagar
@@ -178,3 +162,19 @@ def pay_information(request, pk):
             pay_serializer = PaySerializer(pay)
             return Response(pay_serializer.data, status=status.HTTP_201_CREATED)
         return Response({ 'message': 'No se ha encontrado el pago con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
+
+
+"""
+( Botón cancelar ) (7)
+### /institucion/estudiante/pagar
+	- Redirección a /institucion/estudiante/pagar
+	- Enviar al backend (DELETE /institution/student/bills_to_pay/<int:id_pago>)
+"""
+@api_view(['DELETE'])
+def delete_student_pay(request, pk):
+    pay = Pay.objects.filter(pk=pk).first()
+    if request.method == 'DELETE':
+        if pay:
+            pay.delete()
+            return Response({ 'message': 'Se ha eliminado pago con éxito' }, status=status.HTTP_204_NO_CONTENT)
+        return Response({ 'message': 'No se ha encontrado pago con estos datos' }, status=status.HTTP_400_BAD_REQUEST)

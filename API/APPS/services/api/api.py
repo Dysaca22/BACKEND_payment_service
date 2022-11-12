@@ -1,8 +1,9 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from APPS.services.models import Fase1
+from APPS.services.models import Fase1, Fase2
 from .serializers import Fase1Serializer, Fase2Serializer
+from APPS.institutions.models import Pay
 
 
 """
@@ -70,6 +71,26 @@ def delete_fase1(request, pk):
     fase1 = Fase1.objects.filter(pk=pk).first()
     if request.method == 'DELETE':
         if fase1:
+            pay = Pay.objects.filter(pk=fase1.payID).first()
+            pay.delete()
             fase1.delete()
-            return Response({ 'message': 'No se ha eliminado la fase 1 con éxito' }, status=status.HTTP_204_NO_CONTENT)
+            return Response({ 'message': 'Se ha eliminado la fase 1 con éxito' }, status=status.HTTP_204_NO_CONTENT)
         return Response({ 'message': 'No se ha encontrado fase 1 con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
+    
+
+"""
+( Botón cancelar ) (11)
+### /institucion/estudiante/pagar
+	- Redirección a /institucion/estudiante/pagar
+	- Enviar al backend (POST /services/fase2/delete/<int:id_fase2>)
+"""
+@api_view(['DELETE',])
+def delete_fase2(request, pk):
+    fase2 = Fase2.objects.filter(pk=pk).first()
+    if request.method == 'DELETE':
+        if fase2:
+            pay = Pay.objects.filter(pk=fase2.fase1.payID).first()
+            pay.delete()
+            fase2.fase1.delete()
+            return Response({ 'message': 'Se ha eliminado la fase 2 con éxito' }, status=status.HTTP_204_NO_CONTENT)
+        return Response({ 'message': 'No se ha encontrado fase 2 con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
