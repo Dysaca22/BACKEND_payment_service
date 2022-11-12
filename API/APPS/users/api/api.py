@@ -3,8 +3,54 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 from APPS.users.models import User
 from .serializers import UserSerializer
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from knox.auth import AuthToken
+from .serializers import RegisterSerializer
+
+@api_view(['POST'])
+def login_api(request):
+    serializer = AuthTokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.validated_data['user']
+    _, token = AuthToken.objects.create(user)
+    return Response({
+        "user_info":{
+            "id":user.id,
+            "username":user.username,
+            "email":user.email,
+        },
+        "token":token
+    })
+
+@api_view(["GET"])
+def get_user_data(request):
+    user = request.user
+    if user.is_authenticated:
+        return Response({
+            "user_info":{
+                "id":user.id,
+                "username":user.username,
+                "email":user.email,
+            },
+            "token":request.auth
+        })
+    return Response({"error":"User not authenticated"})
 
 
+@api_view(["POST"])
+def register_api(request):
+    serializer = RegisterSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.save()
+    _, token = AuthToken.objects.create(user)
+    return Response({
+        "user_info":{
+            "id":user.id,
+            "username":user.username,
+            "email":user.email,
+        },
+        "token":token
+    })
 @api_view(['GET', 'POST',])
 def user_api_view(request):
 
