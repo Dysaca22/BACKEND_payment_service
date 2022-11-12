@@ -1,6 +1,7 @@
 Django
 psycopg2
 djangorestframework
+django-rest-knox
 django-simple-history
 pillow
 python-dateutil

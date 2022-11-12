@@ -107,7 +107,7 @@ class Transaction(models.Model):
         ('P', 'In process'),
     )
 
-    passarellaID = models.CharField('Passarella')
+    passarellaID = models.TextField('Passarella')
     amount = models.DecimalField('Amount', max_digits=9, decimal_places=2, editable=False)
     concept = models.TextField('Concept', blank=True)
     _status = models.CharField('Status', max_length=1, choices=STATUS_ENUM, default='P')

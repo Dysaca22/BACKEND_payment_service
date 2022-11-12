@@ -22,6 +22,7 @@ def login_api(request):
         "token":token
     })
 
+
 @api_view(["GET"])
 def get_user_data(request):
     user = request.user
@@ -51,6 +52,8 @@ def register_api(request):
         },
         "token":token
     })
+
+
 @api_view(['GET', 'POST',])
 def user_api_view(request):
 
