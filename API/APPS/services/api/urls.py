@@ -1,8 +1,9 @@
 from django.urls import path
-from .api import shop_detail_view, student_shop_api_view
+from .api import fase1, fase2, delete_fase1
 
 
 urlpatterns = [
-    path('shop/<int:pk>', shop_detail_view, name='shop_detail_api'),
-    path('student/shop/<int:pk_student>', student_shop_api_view, name='student_shop_api'),
+    path('fase1', fase1, name='fase1'),
+    path('fase2', fase2, name='fase2'),
+    path('fase1/delete/<int:pk>', delete_fase1, name='delete_fase1'),
 ]
