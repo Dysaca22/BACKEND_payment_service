@@ -25,7 +25,7 @@ class Service(models.Model):
         (False, 'Inactive'),
     )
 
-    name = models.CharField('Name', max_length=50)
+    name = models.CharField('Name', max_length=50, unique=True)
     _status = models.BooleanField('Status', choices=ACTIVE_OPTION, default=True)
     # Foreign keys
     bank = models.ForeignKey(Bank, verbose_name='Bank', on_delete=models.CASCADE)
@@ -107,9 +107,10 @@ class Transaction(models.Model):
         ('P', 'In process'),
     )
 
+    passarellaID = models.TextField('Passarella')
     amount = models.DecimalField('Amount', max_digits=9, decimal_places=2, editable=False)
     concept = models.TextField('Concept', blank=True)
-    _status = models.CharField('Status', max_length = 1, choices=STATUS_ENUM, default='P')
+    _status = models.CharField('Status', max_length=1, choices=STATUS_ENUM, default='P')
     _createdDate = models.DateTimeField('Creation date', default=timezone.now, editable=False)
     _finishedDate = models.DateTimeField('Finish date', auto_now=True, auto_now_add=False)
     # Foreign keys
@@ -121,7 +122,7 @@ class Transaction(models.Model):
         verbose_name = 'Transaction'
         verbose_name_plural = 'Transactions'
 
-    REQUIRED_FIELDS = ['amount', 'card']
+    REQUIRED_FIELDS = ['amount', 'concept']
 
     def __str__(self):
         return f'{self.id}'

@@ -64,6 +64,10 @@ class Service(models.Model):
     def __str__(self):
         return f'{self.name} - {self.campus}'
 
+    @property
+    def getType(self):
+        return dict(self.TYPE_ENUM)[self.type]
+
 
 class Program(models.Model):
     name = models.CharField('Name', max_length=255)
@@ -156,6 +160,10 @@ class Bill(models.Model):
     def __str__(self):
         return f'{self.id}'
 
+    @property
+    def getPaid(self):
+        return dict(self.PAID_OPTION)[self._paid]
+
     def save(self, *args, **kwargs):
         self._expiration = self._generatedDate + relativedelta(months=+1)
         super(Bill, self).save(*args, **kwargs)    
@@ -182,16 +190,10 @@ class Pay(models.Model):
         verbose_name = 'Pay'
         verbose_name_plural = 'Pays'
 
-    REQUIRED_FIELDS = ['bill', 'student']
+    REQUIRED_FIELDS = ['bills', 'student']
 
     def __str__(self):
         return f'{self.id}'
-
-    def save(self, *args, **kwargs):
-        if self._status == 'F':
-            self.bill._ispaid = True
-            self.bill.save()
-        super(Pay, self).save(*args, **kwargs)
     
     @property
     def _history_user(self):

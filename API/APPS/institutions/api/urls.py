@@ -1,12 +1,12 @@
 from django.urls import path
-from .api import general_info_institution, user_student, general_info_student, student_by_code, missing_bills, generate_pay
+from .api import institution_information, institution_login, student_bills, student_bills_to_pay, delete_student_pay, pay_information
 
 
 urlpatterns = [
-    path('', general_info_institution, name='general_info_institution'),
-    path('user/<int:pk_user>', user_student, name='user_student'),
-    path('student/<int:pk>', general_info_student, name='general_info_student'),
-    path('student/pay/<int:code>', student_by_code, name='student_by_code'),
-    path('student/pay/bills/<int:code>', missing_bills, name='missing_bills'),
-    path('student/pay/bills/', generate_pay, name='generate_pay'),
+    path('', institution_information, name='institution_information'),
+    path('student/login', institution_login, name='institution_login'),
+    path('student/bills', student_bills, name='student_bills'),
+    path('student/bills_to_pay', student_bills_to_pay, name='student_bills_to_pay'),
+    path('student/pay/delete/<int:pk>', delete_student_pay, name='delete_student_pay'),
+    path('student/pay/<int:pk>', pay_information, name='pay_information'),
 ]
