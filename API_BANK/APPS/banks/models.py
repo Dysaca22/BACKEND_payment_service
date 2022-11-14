@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
 from random import randint
-from APPS.users.models import User
+from APPS.users.models import NewUser as User
 
 
 class Bank(models.Model):
