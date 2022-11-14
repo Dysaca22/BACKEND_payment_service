@@ -3,5 +3,5 @@ from .api import bank_login
 
 
 urlpatterns = [
-    path('bank/pay/login', bank_login, name='bank_login'),
+    path('pay/login', bank_login, name='bank_login'),
 ]

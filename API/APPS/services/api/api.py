@@ -7,18 +7,22 @@ from APPS.institutions.models import Pay
 
 
 """
-( Botón pagar ) (4)
-### /pasarela/fase1
-	- Datos que envía el backend (Respuesta del POST de /institution/student/pay)
-		. id pago
-		. Nombre institución
-		. Concepto de servicios a pagar
-		. Valor a pagar
-	- Datos de ingreso usuario (POST al backend /services/fase1)
-		. Correo electrónico
-		. Medio de pago (crédito o débito)
-		. id pago
-		. Botón continuar (6) o cancelar (7)
+url: /api/passarella/fase1
+Método: POST
+Entrada:
+	. email
+	. payType			(DC: debit card, CC: credit card)
+	. payID				(id del pago antes obtenida)
+Salida: 
+	. id
+	. email
+	. banks
+		. EB
+		. WB
+Error: 
+	. email: error
+	. payType: error
+	. payID: error
 """
 @api_view(['POST',])
 def fase1(request):
@@ -31,24 +35,28 @@ def fase1(request):
         
 
 """
-( Botón continuar ) (6)
-### /pasarela/fase2
-	- Datos que envía el backend (Respuesta del POST de /services/fase1)
-		. id fase1
-		. Correo electrónico
-		. Bancos
-			.. Nombre
-	- Datos que envía el backend (GET /institution/student/pay/<int:pk_pago>)
-		. Nombre institución
-		. Concepto de servicios a pagar
-		. Valor a pagar
-	- Datos de ingreso usuario (POST al backend /services/fase2)
-		. Nombre
-		. Apellido
-		. Número de documento
-		. Número de teléfono
-		. id fase1
-		. Botón continuar (8), cancelar (9) o volver
+url: /api/passarella/fase2
+Método: POST
+Entrada:
+	. banks				(EB: East Bank, WB: Western Bank)
+	. name
+	. lastname
+	. idNumber
+	. phone
+	. fase1
+Salida: 
+	. id
+	. institution
+	. concept
+	. value
+	. type_card
+Error: 
+	. banks: error
+	. name: error
+	. lastname: error
+	. idNumber: error
+	. phone: error
+	. fase1: error
 """
 @api_view(['POST',])
 def fase2(request):
@@ -61,10 +69,11 @@ def fase2(request):
 
 
 """
-( Botón cancelar ) (9)
-### /institucion/estudiante/pagar
-	- Redirección a /institucion/estudiante/pagar
-	- Enviar al backend (POST /services/fase1/delete/<int:id_fase1>)
+url: /api/passarella/fase1/delete/<int:pk>
+Método: DELETE
+Entrada: Ninguna
+Salida: { 'message': 'Se ha eliminado la fase 1 con éxito' }
+Error: { 'message': 'No se ha encontrado fase 1 con estos datos' }
 """
 @api_view(['DELETE'])
 def delete_fase1(request, pk):
@@ -79,10 +88,11 @@ def delete_fase1(request, pk):
     
 
 """
-( Botón cancelar ) (11)
-### /institucion/estudiante/pagar
-	- Redirección a /institucion/estudiante/pagar
-	- Enviar al backend (POST /services/fase2/delete/<int:id_fase2>)
+url: /api/passarella/fase2/delete/<int:pk>
+Método: DELETE
+Entrada: Ninguna
+Salida: { 'message': 'Se ha eliminado la fase 2 con éxito' }
+Error: { 'message': 'No se ha encontrado fase 2 con estos datos' }
 """
 @api_view(['DELETE',])
 def delete_fase2(request, pk):

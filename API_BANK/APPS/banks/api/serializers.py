@@ -17,14 +17,14 @@ class CardSerializer(serializers.ModelSerializer):
 class TransactionPreparationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = '__all__'
+        fields = ['passarellaID', 'institution', 'amount', 'concept']
 
-    def to_representation(self, instance, context):
+    def to_representation(self, instance):
         return {
-            'document_number': context.person.idNumber,
+            #'document_number': self.context['person'].idNumber,
             'passarellaID': instance.passarellaID,
             'institution': instance.institution,
             'concept': instance.concept,
-            'value': instance.value,
-            'cards': CardSerializer(context.cards, many=True),
+            'value': instance.amount,
+            #'cards': CardSerializer(self.context['cards'], many=True),
         }

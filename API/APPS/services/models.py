@@ -38,7 +38,7 @@ class Fase2(models.Model):
     phone = models.CharField('Phone number', max_length=10)
     _finished = models.BooleanField('Is finished', default=False)
     # Extras
-    value = models.DecimalField('Value', max_digits=9, decimal_places=2, blank=True)
+    value = models.DecimalField('Value', max_digits=20, decimal_places=2, blank=True)
     concept = models.CharField('Concept', max_length=500, blank=True)
     institution = models.CharField('Institution', max_length=100, blank=True)
     # Foreign keys
