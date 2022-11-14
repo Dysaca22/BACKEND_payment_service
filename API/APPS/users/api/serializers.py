@@ -1,27 +1,17 @@
-from django.contrib.auth import get_user_model
-from rest_framework import serializers, validators
-from APPS.users.models import User
-class RegisterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ('username', 'password', 'email', 'first_name', 'last_name')
+from rest_framework import serializers
+from APPS.users.models import NewUser
 
-        extra_kwargs = {
-            'password': {'write_only': True},
-            'email': {'validators': [validators.UniqueValidator(
-                get_user_model().objects.all(), "email already exists"
-                )]}}
-        def create(self, validated_data):
-            user = get_user_model().objects.create_user(**validated_data)
-            return user
-class UserSerializer(serializers.ModelSerializer):
+class RegisterUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = '__all__'
+        model = NewUser
+        fields = ('email', 'user_name', 'password')
+        extra_kwargs = {'password': {'write_only': True}}
 
-    def to_representation(self, instance):
-        return {
-            'username': instance.username,
-            'email': instance.email,
-            'password': instance.password,
-        }
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        instance = self.Meta.model(**validated_data)
+        if password is not None:
+            instance.set_password(password)
+        instance.save()
+        return instance
+
