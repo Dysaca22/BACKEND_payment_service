@@ -2,7 +2,7 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 from dateutil.relativedelta import relativedelta
 import datetime, random
-from APPS.users.models import User
+from APPS.users.models import NewUser as User
 
 
 class Institution(models.Model):
