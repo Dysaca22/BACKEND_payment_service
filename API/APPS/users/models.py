@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 
 
 class CustomUserManager(BaseUserManager):
-    def create_superuser(self, user_name, password, **extra_fields):
+    def create_superuser(self, username, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
@@ -14,19 +14,19 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
-        return self.create_user(user_name, password, **extra_fields)
+        return self.create_user(username, password, **extra_fields)
 
-    def create_user(self, user_name, password, **extra_fields):
-        if not user_name:
+    def create_user(self, username, password, **extra_fields):
+        if not username:
             raise ValueError('The Username must be set')
-        user = self.model(user_name=user_name, **extra_fields)
+        user = self.model(username=username, **extra_fields)
         user.set_password(password)
         user.save()
         return user
     
 class NewUser(AbstractBaseUser, PermissionsMixin):
 
-    user_name = models.CharField(max_length=150, unique=True)
+    username = models.CharField('Username', max_length=150, unique=True)
     start_date = models.DateTimeField(default=timezone.now)
 
     is_staff = models.BooleanField(default=False)
@@ -34,12 +34,12 @@ class NewUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'user_name'
+    USERNAME_FIELD = 'username'
 
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users'
 
     def __str__(self):
-        return self.user_name
+        return self.username
 

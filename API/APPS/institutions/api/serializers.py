@@ -68,7 +68,7 @@ class PaySerializer(serializers.ModelSerializer):
         fields = ['student', 'bills']
 
     def to_representation(self, instance):
-        concept = 'Pago de'
+        concept = 'Pago de '
         value = 0
         for bill in instance.bills.all():
             concept += f'{bill.semester.program.service.name.lower()} {bill.semester.program.name.lower()}'
@@ -76,7 +76,7 @@ class PaySerializer(serializers.ModelSerializer):
             if bill != [*instance.bills.all()][-1]:
                 concept += ', '
             else: 
-                concept += '.'
+                concept += ''
         return {
             'pay_id': instance.id,
             'institution': instance.student.campus.institution.name,

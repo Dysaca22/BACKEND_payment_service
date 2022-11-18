@@ -1,19 +1,22 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from requests import post
 from APPS.institutions.models import Institution, Campus, Student, Bill, Pay
 from .serializers import InfoInstitucionSerializer, StudentSerializer, StudentBillsSerializer, PaySerializer
 
 
 """
-### /institucion/home
-	- Datos que envía el backend (GET al backend /institution)
-		. Nombre de la institución
-		. Lista de las sedes de la institución
-			.. Nombre
-			.. Ciudad
-	- Datos de ingreso del usuario
-		. Botón pagar cuentas (1)
+url: /api/institution/
+Método: GET
+Entrada: Ninguna
+Salida:
+	. institution
+		.. name
+	. campus
+		.. name
+		.. city
 """
 @api_view(['GET',])
 def institution_information(request):
@@ -29,33 +32,21 @@ def institution_information(request):
 
 
 """
-### /institucion/login
-	- Datos de ingreso del usuario (GET al backend /institution/student/login)
-		. Usuario
-		. Contraseña
-    * Enviar json con user y password
-	
-	
-### /institucion/perfil
-	- Datos que envía el backend (Respuesta del GET de /institution/student/login)
-		. Nombre
-		. Apellido
-		. Código
-		. Nombre campus
-		. Usuario
-	- Datos de ingreso del usuario
-		. Botón ver cuentas (2) o pagar cuentas (1)
+url: /api/institution/student/profile
+Método: GET
+Entrada: Ninguna
+Salida: 
+	. Nombre: name
+	. Apellido: lastname
+	. Código: code
+	. Sede: campus
+	. Usuario: username
 """
 @api_view(['GET',])
-def institution_login(request):
+@permission_classes((IsAuthenticated, ))
+def student_profile(request):
     if request.method == 'GET':
-        user = request.data['user']
-        password = request.data['password']
-
-        student = Student.objects.filter(
-            user__username=user,
-            user__password=password,
-        ).first()
+        student = Student.objects.filter(user=request.user).first()
         if student:
             student_serializer = StudentSerializer(student)
             return Response(student_serializer.data, status=status.HTTP_200_OK)
@@ -63,26 +54,30 @@ def institution_login(request):
     
 
 """
-( Botón ver cuentas ) (2)
-### /institucion/perfil/cuentas
-	- Datos que envía el backend (GET al backend /institution/student/bills)
-		. Nombre
-		. Apellido
-		. Código
-		. Lista de cuentas
-			.. Semestre
-			.. Programa
-			.. Servicio
-			.. Valor
-			.. Estado
-			.. Fecha de emisión
-    * Enviar json con el código del estudiante
+url: /api/institution/student/bills
+Método: GET
+Entrada: Ninguna
+Salida:
+	. Estudiante: student
+		.. Nombre: name
+		.. Apellido: lastname
+		.. Código: code
+		.. Sede: campus
+		.. Usuario: username
+	. Cuentas: bills
+		.. id
+		.. semester
+		.. program
+		.. service
+		.. value
+		.. status
+		.. issue_date
 """
 @api_view(['GET',])
+@permission_classes((IsAuthenticated, ))
 def student_bills(request):
     if request.method == 'GET':
-        code = request.data['code']
-        student = Student.objects.filter(code=code).first()
+        student = Student.objects.filter(user=request.user).first()
         if student:
             bills = Bill.objects.filter(student=student)
             data = {
@@ -95,38 +90,44 @@ def student_bills(request):
 
 
 """
-( Botón pagar cuentas ) (1)
-### /institucion/estudiante
-	- Datos de ingreso usuario (GET al backend /institution/student)
-		. Código estudiante
-		. Botón pagar (3)
-	* Enviar json con el código del estudiante
+url: /api/institution/student/bills_to_pay
+Método: GET
+Entrada: Ninguna
+Salida:
+	. Estudiante: student
+		.. Nombre: name
+		.. Apellido: lastname
+		.. Código: code
+		.. Sede: campus
+		.. Usuario: username
+	. Cuentas: bills
+		.. id
+		.. semester
+		.. program
+		.. service
+		.. value
+		.. status
+		.. issue_date
 
+##############################################################################
 
-( Botón pagar ) (3)
-### /institucion/estudiante/pagar
-	- Datos que envía el backend (GET al backend /institution/student/bills_to_pay/<int:code_student>)
-		. Nombre
-		. Apellido
-		. Código
-		. Lista de cuentas
-			.. id
-			.. Semestre
-			.. Programa
-			.. Servicio
-			.. Valor
-			.. Fecha de emisión
-	- Datos de ingreso usuario (POST al backend /institution/student/pay)
-		. Código estudiante
-		. ids cuentas
-		. Botón pagar (4) o cancelar (5)
+url: /api/institution/student/bills_to_pay
+Método: POST
+Entrada: 
+	. bills 			(vector con los ids de las cuentas a pagar)
+Salida:
+	. pay_id
+	. institution
+	. concept
+	. value
+Error: "bills": ["Clave primaria \"0\" inválida - objeto no existe."]
 """
 @api_view(['GET', 'POST'])
+@permission_classes((IsAuthenticated, ))
 def student_bills_to_pay(request):
-    if request.method == 'GET':
-        code = request.data['code']
-        student = Student.objects.filter(code=code).first()
-        if student:
+    student = Student.objects.filter(user=request.user).first()
+    if student:
+        if request.method == 'GET':
             bills = Bill.objects.filter(student=student, _paid=False)
             data = {
                 'student': student,
@@ -134,26 +135,41 @@ def student_bills_to_pay(request):
             }
             student_bills_serializer = StudentBillsSerializer(data)
             return Response(student_bills_serializer.data, status=status.HTTP_200_OK)
-        return Response({ 'message': 'No se ha encontrado estudiante con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'POST':
-        data = {
-            'student': Student.objects.filter(code=request.data['code']).first().pk,
-            'bills': request.data['bills'],
-        }
-        pay_serializer = PaySerializer(data=data)
-        if pay_serializer.is_valid():
-            pay_serializer.save()
-            return Response(pay_serializer.data, status=status.HTTP_201_CREATED)
-        return Response(pay_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'POST':
+            data = {
+                'student': student.pk,
+                'bills': request.data['bills'],
+            }
+            pay_serializer = PaySerializer(data=data)
+            if pay_serializer.is_valid():
+                pay_serializer.save()
+                post_data = {
+                    'pay_id': pay_serializer.data['pay_id'],
+                    'provider': student.campus.__str__(),
+                    'concept': pay_serializer.data['concept'],
+                    'amount': pay_serializer.data['value'],
+                }
+                response = post('http://localhost:8010/api/passarella/conn_with_provider', data=post_data)
+                if response:
+                    return Response({ 'id_passarella': response.json()['id'] }, status=status.HTTP_201_CREATED)
+                return Response({ 'message': 'Ha ocurrido un problema con la pasarela' }, status=status.HTTP_400_BAD_REQUEST)
+            return Response(pay_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response({ 'message': 'No se ha encontrado estudiante con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
 
 
 """
-- Datos que envía el backend (GET /institution/student/pay/<int:pk_pago>)
-		. Nombre institución
-		. Concepto de servicios a pagar
-		. Valor a pagar
+url: /api/institution/student/pay/<int:pk>
+Método: GET
+Entrada: Ninguna
+Salida:
+	. pay_id
+	. institution
+	. concept
+	. value
+Error: "message": "No se ha encontrado el pago con estos datos"
 """
 @api_view(['GET',])
+@permission_classes((IsAuthenticated, ))
 def pay_information(request, pk):
     pay = Pay.objects.filter(pk=pk).first()
 
@@ -165,16 +181,18 @@ def pay_information(request, pk):
 
 
 """
-( Botón cancelar ) (7)
-### /institucion/estudiante/pagar
-	- Redirección a /institucion/estudiante/pagar
-	- Enviar al backend (DELETE /institution/student/bills_to_pay/<int:id_pago>)
+url: /api/institution/student/pay/delete/<int:pk>
+Método: DELETE
+Entrada: Ninguna
+Salida: "message": "Se ha cancelado pago con éxito"
+Error: "message": "No se ha encontrado pago con estos datos"
 """
 @api_view(['DELETE'])
+@permission_classes((IsAuthenticated, ))
 def delete_student_pay(request, pk):
     pay = Pay.objects.filter(pk=pk).first()
     if request.method == 'DELETE':
         if pay:
             pay.delete()
-            return Response({ 'message': 'Se ha eliminado pago con éxito' }, status=status.HTTP_204_NO_CONTENT)
+            return Response({ 'message': 'Se ha cancelado pago con éxito' }, status=status.HTTP_204_NO_CONTENT)
         return Response({ 'message': 'No se ha encontrado pago con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
