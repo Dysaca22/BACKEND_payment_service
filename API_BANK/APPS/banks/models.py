@@ -6,7 +6,13 @@ from APPS.users.models import NewUser as User
 
 
 class Bank(models.Model):
-    name = models.CharField('Name', max_length=255)
+
+    BANK_ENUM = (
+        ('EB', 'East Bank'),
+        ('WB', 'Western Bank'),
+    )
+
+    name = models.CharField('Name', choices=BANK_ENUM, unique=True, max_length=255)
 
     class Meta:
         verbose_name = 'Bank'
@@ -15,17 +21,22 @@ class Bank(models.Model):
     REQUIRED_FIELDS = '__all__'
 
     def __str__(self):
-        return f'{self.name}'
+        return f'{dict(self.BANK_ENUM)[self.name]}'
 
 
 class Service(models.Model):
+
+    TYPE_SERVICE = (
+        ('C', 'Consult'),
+        ('P', 'Pay'),
+    )
 
     ACTIVE_OPTION = (
         (True, 'Active'),
         (False, 'Inactive'),
     )
 
-    name = models.CharField('Name', max_length=50, unique=True)
+    name = models.CharField('Name', max_length=1, choices=TYPE_SERVICE)
     _status = models.BooleanField('Status', choices=ACTIVE_OPTION, default=True)
     # Foreign keys
     bank = models.ForeignKey(Bank, verbose_name='Bank', on_delete=models.CASCADE)
@@ -37,7 +48,7 @@ class Service(models.Model):
     REQUIRED_FIELDS = ['name', 'bank']
 
     def __str__(self):
-        return f'{self.name} - is {dict(self.ACTIVE_OPTION)[self._status]}'
+        return f'{self.bank} {dict(self.TYPE_SERVICE)[self.name]} - is {dict(self.ACTIVE_OPTION)[self._status]}'
 
 
 class Person(models.Model):

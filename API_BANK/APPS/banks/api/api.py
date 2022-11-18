@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from APPS.banks.models import Person, Card
-from .serializers import TransactionPreparationSerializer
+from APPS.banks.models import Bank, Service, Person, Card
+from .serializers import TransactionPreparationSerializer, ServiceSerializer
 
 
 """
@@ -48,3 +48,17 @@ def bank_login(request):
                 return Response(pay_preparation_serializer.data, status=status.HTTP_200_OK)
             return Response(pay_preparation_serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
     return Response({ 'message': 'No se ha encontrado la persona con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET',])
+def query_is_active(request):
+    type = request.data['type']
+    bank = request.data['bank']
+    bank = Bank.objects.filter(name=bank).first()
+    if bank:
+        service = Service.objects.filter(name=type, bank=bank).first()
+        if service:
+            service_serializer = ServiceSerializer(service)
+            return Response(service_serializer.data, status=status.HTTP_200_OK)
+        return Response({ 'message': 'No se ha encontrado el servicio con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
+    return Response({ 'message': 'No se ha encontrado el banco con estos datos' }, status=status.HTTP_400_BAD_REQUEST)

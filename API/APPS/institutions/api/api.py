@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from requests import post
 from APPS.institutions.models import Institution, Campus, Student, Bill, Pay
 from .serializers import InfoInstitucionSerializer, StudentSerializer, StudentBillsSerializer, PaySerializer
 
@@ -142,7 +143,16 @@ def student_bills_to_pay(request):
             pay_serializer = PaySerializer(data=data)
             if pay_serializer.is_valid():
                 pay_serializer.save()
-                return Response(pay_serializer.data, status=status.HTTP_201_CREATED)
+                post_data = {
+                    'pay_id': pay_serializer.data['pay_id'],
+                    'provider': student.campus.__str__(),
+                    'concept': pay_serializer.data['concept'],
+                    'amount': pay_serializer.data['value'],
+                }
+                response = post('http://localhost:8010/api/passarella/conn_with_provider', data=post_data)
+                if response:
+                    return Response({ 'id_passarella': response.json()['id'] }, status=status.HTTP_201_CREATED)
+                return Response({ 'message': 'Ha ocurrido un problema con la pasarela' }, status=status.HTTP_400_BAD_REQUEST)
             return Response(pay_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response({ 'message': 'No se ha encontrado estudiante con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
 

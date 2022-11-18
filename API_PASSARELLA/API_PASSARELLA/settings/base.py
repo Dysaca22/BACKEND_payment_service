@@ -29,14 +29,14 @@ BASE_APPS = [
 ]
 
 LOCAL_APPS = [
-    'APPS.users',
-    'APPS.institutions',
+    'APPS.services',
 ]
 
 THIRD_APPS = [
     'rest_framework',
     'simple_history',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
 ]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
@@ -54,7 +54,7 @@ MIDDLEWARE = [
     'simple_history.middleware.HistoryRequestMiddleware',           # Users changes register
 ]
 
-ROOT_URLCONF = 'API.urls'
+ROOT_URLCONF = 'API_PASSARELLA.urls'
 
 TEMPLATES = [
     {
@@ -72,7 +72,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'API.wsgi.application'
+WSGI_APPLICATION = 'API_PASSARELLA.wsgi.application'
 
 
 # Password validation
@@ -125,8 +125,14 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=30),
 }
 
-AUTH_USER_MODEL = 'users.NewUser'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST_USER = 'dysaca0022@gmail.com'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_PASSWORD = 'sjrqgtwdxcbjawru'
