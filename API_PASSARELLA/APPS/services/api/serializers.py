@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from requests import get, post
 from APPS.services.models import ConnectionWithProvider, Phase1, Phase2
 
 
@@ -28,6 +29,18 @@ class Phase2Serializer(serializers.ModelSerializer):
         model = Phase2
         fields = '__all__'
 
+    def validate_bank(self, value):
+        get_data = {
+            'type': 'P',
+            'bank': value,
+        }
+        response_query = get('http://localhost:8020/api/bank/service/query', data=get_data)
+        if response_query:
+            if response_query.json()['active']:
+                return value
+            raise serializers.ValidationError(f'El banco {value} tiene el servicio de pago deshabilitado.')
+        raise serializers.ValidationError('Ha ocurrido un problema con el banco')
+
     def to_representation(self, instance):
         return {
             'id': instance.id,
@@ -35,4 +48,5 @@ class Phase2Serializer(serializers.ModelSerializer):
             'provider': instance.phase1.connection_with_provider.provider,
             'concept': instance.phase1.connection_with_provider.concept,
             'amount': instance.phase1.connection_with_provider.amount,
+            'bank': instance.bank,
         }

@@ -130,10 +130,11 @@ class Student(models.Model):
         return f'{self.name} {self.lastName}'
 
     def save(self, *args, **kwargs):
-        code = random.randint(1000000000, 9999999999)
-        while Student.objects.filter(code=f'{code}'):
+        if not self.code:
             code = random.randint(1000000000, 9999999999)
-        self.code = f'{code}'
+            while Student.objects.filter(code=f'{code}'):
+                code = random.randint(1000000000, 9999999999)
+            self.code = f'{code}'
         super(Student, self).save(*args, **kwargs)
 
 
@@ -165,19 +166,21 @@ class Bill(models.Model):
         return dict(self.PAID_OPTION)[self._paid]
 
     def save(self, *args, **kwargs):
-        self._expiration = self._generatedDate + relativedelta(months=+1)
+        if not self._expiration:
+            self._expiration = self._generatedDate + relativedelta(months=+1)
         super(Bill, self).save(*args, **kwargs)    
 
 
 class Pay(models.Model):
 
     STATUS_ENUM = (
-        ('S', 'Started'), 
-        ('F', 'Finished'),
+        ('S', 'Successful'), 
+        ('F', 'Failed'),
+        ('C', 'Cancelled'),
         ('P', 'In process'),
-        ('C', 'cancelled'),
     )
 
+    receipt = models.CharField('Receipt number', max_length=20, blank=True)
     _date = models.DateTimeField('Creation date', default=datetime.datetime.now(), editable=False)
     _status = models.CharField('Status', max_length = 1, choices=STATUS_ENUM, default='P')
     # Foreign keys
