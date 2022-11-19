@@ -83,3 +83,9 @@ class PaySerializer(serializers.ModelSerializer):
             'concept': concept,
             'value': value,
         }
+
+
+class PayFinishSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pay
+        fields = '__all__'

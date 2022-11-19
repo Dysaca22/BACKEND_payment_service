@@ -17,6 +17,7 @@ class ConnectionWithProvider(models.Model):
     provider = models.CharField('Provider', max_length=100)
     concept = models.TextField('Concept')
     amount = models.DecimalField('Amount', max_digits=20, decimal_places=2)
+    receipt = models.CharField('Receipt number', max_length=20, blank=True)
     _status = models.CharField('Status', max_length=1, choices=STATUS_ENUM, default='P')
     _createdDate = models.DateTimeField('Creation date', default=timezone.now, editable=False)
 
@@ -30,9 +31,10 @@ class ConnectionWithProvider(models.Model):
         return f'{self.id}'
 
     def save(self, *args, **kwargs):
-        self.id = f'{get_random_string(length=32)}'
-        while ConnectionWithProvider.objects.filter(pk=self.id).first():
+        if not self.id:
             self.id = f'{get_random_string(length=32)}'
+            while ConnectionWithProvider.objects.filter(pk=self.id).first():
+                self.id = f'{get_random_string(length=32)}'
         super(ConnectionWithProvider, self).save(*args, **kwargs)
 
 

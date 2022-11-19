@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from requests import post
 from APPS.institutions.models import Institution, Campus, Student, Bill, Pay
-from .serializers import InfoInstitucionSerializer, StudentSerializer, StudentBillsSerializer, PaySerializer
+from .serializers import InfoInstitucionSerializer, StudentSerializer, StudentBillsSerializer, PaySerializer, PayFinishSerializer
 
 
 """
@@ -195,4 +195,17 @@ def delete_student_pay(request, pk):
         if pay:
             pay.delete()
             return Response({ 'message': 'Se ha cancelado pago con éxito' }, status=status.HTTP_204_NO_CONTENT)
+        return Response({ 'message': 'No se ha encontrado pago con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT',])
+def finallize(request):
+    if request.method == 'PUT':
+        pay = Pay.objects.filter(pk=request.data['id']).first()
+        if pay:
+            pay._status = request.data['status']
+            pay.receipt = request.data['number_bill']
+            pay.save()
+            pay.bills.update(_paid=True)
+            return Response(PayFinishSerializer(pay).data, status=status.HTTP_201_CREATED)
         return Response({ 'message': 'No se ha encontrado pago con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
