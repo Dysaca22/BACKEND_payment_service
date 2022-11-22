@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from APPS.banks.models import Bank, Service, Person, DebitCard, ConnectionWithPassarella
+from APPS.banks.models import Bank, Service, Person, DebitCard, ConnectionWithPassarella, Transaction
 from .serializers import ProfileSerializer, ServiceSerializer, ConnSerializer, ConnGetSerializer, TransactionSerializer
 from .functions import update_statud_connection
 
@@ -91,3 +91,12 @@ def make_transaction(request):
                 return Response({ 'message': 'La tarjeta seleccionada esta deshabilitada' }, status=status.HTTP_400_BAD_REQUEST)    
             return Response({ 'message': 'No se ha encontrado la tarjeta con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
         return Response({ 'message': 'No se ha encontrado proceso de pago con estos datos' }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET',])
+@permission_classes((IsAuthenticated, ))
+def transactions_list(request):
+    if request.method == 'GET':
+        transactions = Transaction.objects.filter(card__person__user=request.user).order_by('-_createdDate')
+        transactions_serializer = TransactionSerializer(transactions, many=True)
+        return Response(transactions_serializer.data, status=status.HTTP_201_CREATED)
