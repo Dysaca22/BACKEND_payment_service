@@ -38,8 +38,8 @@ PROCESO DE PAGO
     # http://localhost:8000/api/user/login (POST)
 
     {
-        "username": "Dylanc",
-        "password": "1234"
+        "username": "",
+        "password": ""
     }
 
     Guardar token access y colocarlo como header
@@ -59,7 +59,7 @@ PROCESO DE PAGO
     Se ingresan los id de los servicisos que se quieren pagar
 
     {
-        "bills": [2]
+        "bills": []
     }
 
 (Pasarela)
@@ -68,15 +68,24 @@ PROCESO DE PAGO
     # http://localhost:8010/api/passarella/pay/<int:id> (GET)
 
 8. Ingreso de datos de llenado de la fase 1 de la pasarela
+    # http://localhost:8010/api/passarella/phase1 (POST)
+    
+    {
+        "email": "",
+        "payment_method": "",
+        "connection_with_provider": ""
+    }
+
+8. Ingreso de datos de llenado de la fase 2 de la pasarela
     # http://localhost:8010/api/passarella/phase2 (POST)
 
     {
-        "bank": "EB",
-        "name": "Dylan",
-        "lastname": "Cantillo",
-        "number_id": "1001820511",
-        "phone": "1234567890",
-        "phase1": 4
+        "bank": "",
+        "name": "",
+        "lastname": "",
+        "number_id": "",
+        "phone": "",
+        "phase1": 
     }
 
 (Banco)
@@ -85,23 +94,23 @@ PROCESO DE PAGO
     # http://localhost:8020/api/user/login (POST)
 
     {
-        "username": "dysaca",
-        "password": "1234"
+        "username": "",
+        "password": ""
     }
 
 8.2 Consulta de tarjetas en el banco
     # http://localhost:8020/api/bank/service/pay_consult (GET)
 
     {
-        "bank": "EB"
+        "bank": ""
     }
 
 9 Inisio de sesión en el banco para proceso de pago
     # http://localhost:8020/api/user/login (POST)
 
     {
-        "username": "dysaca",
-        "password": "1234"
+        "username": "",
+        "password": ""
     }
 
 10. Obtención datos de la vista para pago en el banco
@@ -109,15 +118,15 @@ PROCESO DE PAGO
 
     {
         "bank": "EB",
-        "conn_with_bank_id": "q9HpdiQS0n3P7a98TQ0mtS4wnfsQso9U"
+        "conn_with_bank_id": ""
     }
 
 11. Ingreso de datos para pago
     # http://localhost:8020/api/bank/service/transaction (POST)
 
     {
-        "conn_with_bank_id": "q9HpdiQS0n3P7a98TQ0mtS4wnfsQso9U",
-        "card": "7833763455434912"
+        "conn_with_bank_id": "",
+        "card": ""
     }
 
 12. Ver transacciones de la persona
